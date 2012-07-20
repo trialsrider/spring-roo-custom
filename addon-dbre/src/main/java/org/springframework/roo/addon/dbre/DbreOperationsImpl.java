@@ -1,10 +1,16 @@
 package org.springframework.roo.addon.dbre;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -13,6 +19,7 @@ import org.apache.commons.lang3.Validate;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.Service;
+import org.osgi.service.component.ComponentContext;
 import org.springframework.roo.addon.dbre.model.Database;
 import org.springframework.roo.addon.dbre.model.DatabaseXmlUtils;
 import org.springframework.roo.addon.dbre.model.DbreModelService;
@@ -24,6 +31,7 @@ import org.springframework.roo.project.Path;
 import org.springframework.roo.project.PathResolver;
 import org.springframework.roo.project.ProjectOperations;
 import org.springframework.roo.support.logging.HandlerUtils;
+import org.springframework.roo.support.osgi.OSGiUtils;
 import org.springframework.roo.support.util.DomUtils;
 import org.springframework.roo.support.util.XmlUtils;
 import org.w3c.dom.Document;
@@ -46,6 +54,11 @@ public class DbreOperationsImpl implements DbreOperations {
     @Reference private FileManager fileManager;
     @Reference private PathResolver pathResolver;
     @Reference private ProjectOperations projectOperations;
+    private ComponentContext context;
+
+    protected void activate(final ComponentContext context) {
+        this.context = context;
+    }
 
     public void displayDatabaseMetadata(final Set<Schema> schemas,
             final File file, final boolean view) {
@@ -59,10 +72,33 @@ public class DbreOperationsImpl implements DbreOperations {
         outputSchemaXml(database, schemas, file, true);
     }
 
+    protected Collection<URL> findResources(final String path) {
+        // For an OSGi bundle search, we add the root prefix to the given path
+        return OSGiUtils.findEntriesByPath(context.getBundleContext(),
+                OSGiUtils.ROOT_PATH + path);
+    }
+
     public boolean isDbreInstallationPossible() {
         return projectOperations.isFocusedProjectAvailable()
                 && projectOperations
                         .isFeatureInstalledInFocusedModule(FeatureNames.JPA);
+    }
+
+    private Properties openProperties(File file) {
+        Properties props = new Properties();
+        try {
+            InputStream in = new BufferedInputStream(new FileInputStream(file));
+            if (file.getName().endsWith(".xml")) {
+                props.loadFromXML(in);
+            }
+            else {
+                props.load(in);
+            }
+        }
+        catch (Exception e) {
+            throw new RuntimeException("unable to process property file", e);
+        }
+        return props;
     }
 
     private void outputSchemaXml(final Database database,
@@ -104,7 +140,22 @@ public class DbreOperationsImpl implements DbreOperations {
             final boolean testAutomatically, final boolean view,
             final Set<String> includeTables, final Set<String> excludeTables,
             final boolean includeNonPortableAttributes,
-            final boolean activeRecord) {
+            final boolean activeRecord, final File tableNameMapper) {
+
+        DbreTypeUtils.setTableMappings(null);
+        if (tableNameMapper != null && tableNameMapper.isFile()
+                && tableNameMapper.canRead()
+                && tableNameMapper.getName() != null) {
+            // if (tableNameMapper.getName().endsWith(".groovy")) {
+            // //
+            // DbreTypeUtils.setTableMapper(openGroovyScript(tableNameMapper));
+            // DbreTypeUtils.setTableMapper(tableNameMapper);
+            // }
+            // else {
+            DbreTypeUtils.setTableMappings(openProperties(tableNameMapper));
+            // }
+        }
+
         // Force it to refresh the database from the actual JDBC connection
         final Database database = dbreModelService.refreshDatabase(schemas,
                 view, includeTables, excludeTables);

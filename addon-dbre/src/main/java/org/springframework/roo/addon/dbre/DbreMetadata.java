@@ -318,17 +318,15 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
             if (foreignKey.getReferenceCount() == 1) {
                 final Reference reference = foreignKey.getReferences()
                         .iterator().next();
-                fieldName = new JavaSymbolName(
-                        DbreTypeUtils.suggestFieldName(reference
-                                .getLocalColumnName()));
+                fieldName = new JavaSymbolName(DbreTypeUtils.suggestFieldName(
+                        reference.getLocalColumnName(), table.getName()));
             }
             else {
                 final Short keySequence = foreignKey.getKeySequence();
                 final String fieldSuffix = keySequence != null
                         && keySequence > 0 ? String.valueOf(keySequence) : "";
-                fieldName = new JavaSymbolName(
-                        DbreTypeUtils.suggestFieldName(foreignTableName)
-                                + fieldSuffix);
+                fieldName = new JavaSymbolName(DbreTypeUtils.suggestFieldName(
+                        foreignTableName, "") + fieldSuffix);
             }
             final JavaType fieldType = DbreTypeUtils.findTypeForTableName(
                     managedEntities, foreignTableName, foreignSchemaName);
@@ -396,15 +394,15 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
             final String fieldSuffix = keySequence != null && keySequence > 0 ? String
                     .valueOf(keySequence) : "";
             JavaSymbolName fieldName = new JavaSymbolName(
-                    getInflectorPlural(DbreTypeUtils
-                            .suggestFieldName(foreignTableName)) + fieldSuffix);
+                    getInflectorPlural(DbreTypeUtils.suggestFieldName(
+                            foreignTableName, "")) + fieldSuffix);
             JavaSymbolName mappedByFieldName = null;
             if (exportedKey.getReferenceCount() == 1) {
                 final Reference reference = exportedKey.getReferences()
                         .iterator().next();
                 mappedByFieldName = new JavaSymbolName(
-                        DbreTypeUtils.suggestFieldName(reference
-                                .getForeignColumnName()));
+                        DbreTypeUtils.suggestFieldName(
+                                reference.getForeignColumnName(), ""));
             }
             else {
                 mappedByFieldName = new JavaSymbolName(
@@ -444,7 +442,7 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
             final String fieldSuffix = keySequence != null && keySequence > 0 ? String
                     .valueOf(keySequence) : "";
             final JavaSymbolName fieldName = new JavaSymbolName(
-                    DbreTypeUtils.suggestFieldName(foreignTableName)
+                    DbreTypeUtils.suggestFieldName(foreignTableName, "")
                             + fieldSuffix);
             final JavaType fieldType = DbreTypeUtils.findTypeForTableName(
                     managedEntities, foreignTableName, foreignSchemaName);
@@ -515,7 +513,7 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
             final String fieldSuffix = keySequence != null && keySequence > 0 ? String
                     .valueOf(keySequence) : "";
             JavaSymbolName fieldName = new JavaSymbolName(
-                    DbreTypeUtils.suggestFieldName(foreignTableName)
+                    DbreTypeUtils.suggestFieldName(foreignTableName, "")
                             + fieldSuffix);
 
             final JavaType fieldType = DbreTypeUtils.findTypeForTableName(
@@ -539,7 +537,8 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
             }
 
             final JavaSymbolName mappedByFieldName = new JavaSymbolName(
-                    DbreTypeUtils.suggestFieldName(table.getName())
+                    DbreTypeUtils.suggestFieldName(table.getName(),
+                            table.getName())
                             + fieldSuffix);
 
             final FieldMetadataBuilder fieldBuilder = getOneToOneMappedByField(
@@ -555,7 +554,7 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
         for (final Column column : table.getColumns()) {
             final String columnName = column.getName();
             JavaSymbolName fieldName = new JavaSymbolName(
-                    DbreTypeUtils.suggestFieldName(columnName));
+                    DbreTypeUtils.suggestFieldName(columnName, table.getName()));
 
             final boolean isIdField = isIdField(fieldName)
                     || column.isPrimaryKey();

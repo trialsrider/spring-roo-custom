@@ -49,9 +49,12 @@ public interface DbreOperations {
      *            non-portable JPA @Column attributes such as 'columnDefinition'
      * @param activeRecord whether to generate CRUD active record methods for
      *            each entity
+     * @param tableNameMapper an optional file containing mapping rules for
+     *            table names in property file format
      */
     void reverseEngineerDatabase(Set<Schema> schemas,
             JavaPackage destinationPackage, boolean testAutomatically,
             boolean view, Set<String> includeTables, Set<String> excludeTables,
-            boolean includeNonPortableAttributes, boolean activeRecord);
+            boolean includeNonPortableAttributes, boolean activeRecord,
+            File tableNameMapper);
 }

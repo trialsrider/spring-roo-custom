@@ -269,8 +269,8 @@ public class DbreDatabaseListenerImpl extends
             final String columnName = column.getName();
             JavaSymbolName fieldName;
             try {
-                fieldName = new JavaSymbolName(
-                        DbreTypeUtils.suggestFieldName(columnName));
+                fieldName = new JavaSymbolName(DbreTypeUtils.suggestFieldName(
+                        columnName, table.getName()));
             }
             catch (final RuntimeException e) {
                 throw new IllegalArgumentException(

@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import java.util.Properties;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.roo.addon.dbre.model.DbreModelService;
@@ -53,6 +54,16 @@ public abstract class DbreTypeUtils {
         SCHEMA_ATTRIBUTES.put(TABLE, SCHEMA_ATTRIBUTE);
         SCHEMA_ATTRIBUTES.put(ROO_JPA_ENTITY, SCHEMA_ATTRIBUTE);
         SCHEMA_ATTRIBUTES.put(ROO_JPA_ACTIVE_RECORD, SCHEMA_ATTRIBUTE);
+    }
+
+    private static Properties tableMappings = null;
+
+    public static Properties getTableMappings() {
+        return tableMappings;
+    }
+
+    public static void setTableMappings(Properties tableMappings) {
+        DbreTypeUtils.tableMappings = tableMappings;
     }
 
     /**
@@ -152,11 +163,36 @@ public abstract class DbreTypeUtils {
         return null;
     }
 
-    private static String getName(final String str, final boolean isField) {
+    private static String getName(String str, final boolean isField,
+            String tableName) {
+        String dbElementName = null;
+        // remove the table name portion of the field.
+        if (isField && (str.length() > tableName.length())) {
+            dbElementName = str.substring(tableName.length());
+        }
+        else {
+            dbElementName = str;
+        }
+        if (DbreTypeUtils.tableMappings != null) {
+            // apply any matching tableMapping entries
+            boolean matchComplete = false;
+            // while (matchComplete == false) {
+            // matchComplete = true;
+            for (Entry<Object, Object> mapping : DbreTypeUtils.tableMappings
+                    .entrySet()) {
+                if (dbElementName.matches("(?i)" + mapping.getKey())) {
+                    dbElementName = dbElementName.replaceAll(
+                            "(?i)" + mapping.getKey(),
+                            String.valueOf(mapping.getValue()));
+                    // matchComplete = false; // need to rematch
+                }
+            }
+            // }
+        }
         final StringBuilder result = new StringBuilder();
         boolean isDelimChar = false;
-        for (int i = 0; i < str.length(); i++) {
-            final char c = str.charAt(i);
+        for (int i = 0; i < dbElementName.length(); i++) {
+            final char c = dbElementName.charAt(i);
             if (i == 0) {
                 if (c == '0' || c == '1' || c == '2' || c == '3' || c == '4'
                         || c == '5' || c == '6' || c == '7' || c == '8'
@@ -181,7 +217,7 @@ public abstract class DbreTypeUtils {
                 isDelimChar = false;
             }
             else {
-                if (i > 1 && Character.isLowerCase(str.charAt(i - 1))
+                if (i > 1 && Character.isLowerCase(dbElementName.charAt(i - 1))
                         && Character.isUpperCase(c)) {
                     result.append(c);
                 }
@@ -228,9 +264,10 @@ public abstract class DbreTypeUtils {
      * @param name the name of the table or column (required)
      * @return a String representing the table or column
      */
-    public static String suggestFieldName(final String name) {
+    public static String suggestFieldName(final String name,
+            final String tableName) {
         Validate.notBlank(name, "Table or column name required");
-        return getName(name, true);
+        return getName(name, true, tableName);
     }
 
     /**
@@ -241,7 +278,7 @@ public abstract class DbreTypeUtils {
      */
     public static String suggestFieldName(final Table table) {
         Validate.notNull(table, "Table required");
-        return getName(table.getName(), true);
+        return getName(table.getName(), true, "");
     }
 
     public static String suggestPackageName(final String str) {
@@ -288,7 +325,7 @@ public abstract class DbreTypeUtils {
             result.append(javaPackage.getFullyQualifiedPackageName());
             result.append(".");
         }
-        result.append(getName(tableName, false));
+        result.append(getName(tableName, false, ""));
         return new JavaType(result.toString());
     }
 }
