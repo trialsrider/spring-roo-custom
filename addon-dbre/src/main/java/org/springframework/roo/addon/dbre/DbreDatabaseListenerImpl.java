@@ -270,7 +270,7 @@ public class DbreDatabaseListenerImpl extends
             JavaSymbolName fieldName;
             try {
                 fieldName = new JavaSymbolName(DbreTypeUtils.suggestFieldName(
-                        columnName, table.getName()));
+                        columnName, table.getName(), column.isPrimaryKey()));
             }
             catch (final RuntimeException e) {
                 throw new IllegalArgumentException(

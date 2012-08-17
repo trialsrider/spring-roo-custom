@@ -239,7 +239,12 @@ public class Column {
             break;
         case Types.OTHER:
             jdbcType = "OTHER";
-            javaType = JavaType.STRING;
+            if (typeName.equals("SDO_GEOMETRY")) {
+                javaType = new JavaType("com.vividsolutions.jts.geom.Geometry");
+            }
+            else {
+                javaType = JavaType.STRING;
+            }
             break;
         default:
             jdbcType = "VARCHAR";

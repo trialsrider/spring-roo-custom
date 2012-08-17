@@ -164,14 +164,13 @@ public abstract class DbreTypeUtils {
     }
 
     private static String getName(String str, final boolean isField,
-            String tableName) {
-        String dbElementName = null;
+            String tableName, boolean isPrimaryKey) {
+        String dbElementName = str;
         // remove the table name portion of the field.
-        if (isField && (str.length() > tableName.length())) {
+        if (isField && !isPrimaryKey && (tableName.length() > 0)
+                && (str.length() > tableName.length())
+                && (str.startsWith(tableName))) {
             dbElementName = str.substring(tableName.length());
-        }
-        else {
-            dbElementName = str;
         }
         if (DbreTypeUtils.tableMappings != null) {
             // apply any matching tableMapping entries
@@ -265,9 +264,21 @@ public abstract class DbreTypeUtils {
      * @return a String representing the table or column
      */
     public static String suggestFieldName(final String name,
+            final String tableName, final boolean isPreventRename) {
+        Validate.notBlank(name, "Table or column name required");
+        return getName(name, true, tableName, isPreventRename);
+    }
+
+    /**
+     * Returns a field name for a given database table or column name;
+     * 
+     * @param name the name of the table or column (required)
+     * @return a String representing the table or column
+     */
+    public static String suggestFieldName(final String name,
             final String tableName) {
         Validate.notBlank(name, "Table or column name required");
-        return getName(name, true, tableName);
+        return suggestFieldName(name, tableName, false);
     }
 
     /**
@@ -278,7 +289,7 @@ public abstract class DbreTypeUtils {
      */
     public static String suggestFieldName(final Table table) {
         Validate.notNull(table, "Table required");
-        return getName(table.getName(), true, "");
+        return getName(table.getName(), true, "", false);
     }
 
     public static String suggestPackageName(final String str) {
@@ -325,7 +336,7 @@ public abstract class DbreTypeUtils {
             result.append(javaPackage.getFullyQualifiedPackageName());
             result.append(".");
         }
-        result.append(getName(tableName, false, ""));
+        result.append(getName(tableName, false, "", false));
         return new JavaType(result.toString());
     }
 }

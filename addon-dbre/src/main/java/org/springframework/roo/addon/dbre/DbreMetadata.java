@@ -319,7 +319,7 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
                 final Reference reference = foreignKey.getReferences()
                         .iterator().next();
                 fieldName = new JavaSymbolName(DbreTypeUtils.suggestFieldName(
-                        reference.getLocalColumnName(), table.getName()));
+                        reference.getLocalColumnName(), table.getName(), true));
             }
             else {
                 final Short keySequence = foreignKey.getKeySequence();
@@ -553,16 +553,17 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
 
         for (final Column column : table.getColumns()) {
             final String columnName = column.getName();
+            final boolean isForeignKey = table
+                    .findImportedKeyByLocalColumnName(columnName) != null;
             JavaSymbolName fieldName = new JavaSymbolName(
-                    DbreTypeUtils.suggestFieldName(columnName, table.getName()));
+                    DbreTypeUtils.suggestFieldName(columnName, table.getName(),
+                            isForeignKey || column.isPrimaryKey()));
 
             final boolean isIdField = isIdField(fieldName)
                     || column.isPrimaryKey();
             final boolean isVersionField = isVersionField(fieldName)
                     || columnName.equals("version");
             final boolean isCompositeKeyField = isCompositeKeyField(fieldName);
-            final boolean isForeignKey = table
-                    .findImportedKeyByLocalColumnName(columnName) != null;
             if (isIdField || isVersionField || isCompositeKeyField
                     || isForeignKey) {
                 continue;
