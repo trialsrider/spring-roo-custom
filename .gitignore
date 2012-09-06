@@ -9,3 +9,7 @@ annotations/src/main/java/org
 *.iws
 .idea
 *.aj
+bootstrap
+log.roo
+out
+build.sh

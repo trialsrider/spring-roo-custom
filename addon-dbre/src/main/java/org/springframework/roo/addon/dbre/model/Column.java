@@ -21,6 +21,7 @@ import org.springframework.roo.model.JavaType;
  * @since 1.1
  */
 public class Column {
+    public static final String ORACLE_GEOMETRY_TYPE = "SDO_GEOMETRY";
     private boolean autoIncrement;
     private final int columnSize;
     private final int dataType;
@@ -238,11 +239,12 @@ public class Column {
             javaType = OBJECT;
             break;
         case Types.OTHER:
-            jdbcType = "OTHER";
-            if (typeName.equals("SDO_GEOMETRY")) {
+            if (typeName.equals(ORACLE_GEOMETRY_TYPE)) {
+                jdbcType = ORACLE_GEOMETRY_TYPE;
                 javaType = new JavaType("com.vividsolutions.jts.geom.Geometry");
             }
             else {
+                jdbcType = "OTHER";
                 javaType = JavaType.STRING;
             }
             break;

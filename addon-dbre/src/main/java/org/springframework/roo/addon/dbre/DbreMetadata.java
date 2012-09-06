@@ -480,71 +480,81 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
             return;
         }
 
-        for (final ForeignKey exportedKey : table.getExportedKeys()) {
-            final Table exportedKeyForeignTable = exportedKey.getForeignTable();
-            Validate.notNull(
-                    exportedKeyForeignTable,
-                    "Foreign key table for foreign key '"
-                            + exportedKey.getName()
-                            + "' in table '"
-                            + table.getFullyQualifiedTableName()
-                            + "' does not exist. One-to-one relationship not created");
-            if (exportedKeyForeignTable.isJoinTable()) {
-                continue;
-            }
-
-            final String foreignTableName = exportedKeyForeignTable.getName();
-            final String foreignSchemaName = exportedKeyForeignTable
-                    .getSchema().getName();
-            final Table foreignTable = database.getTable(foreignTableName,
-                    foreignSchemaName);
-            Validate.notNull(
-                    foreignTable,
-                    "Related table '"
-                            + exportedKeyForeignTable
-                                    .getFullyQualifiedTableName()
-                            + "' could not be found but has a foreign-key reference to table '"
-                            + table.getFullyQualifiedTableName() + "'");
-            if (!isOneToOne(foreignTable,
-                    foreignTable.getImportedKey(exportedKey.getName()))) {
-                continue;
-            }
-            final Short keySequence = exportedKey.getKeySequence();
-            final String fieldSuffix = keySequence != null && keySequence > 0 ? String
-                    .valueOf(keySequence) : "";
-            JavaSymbolName fieldName = new JavaSymbolName(
-                    DbreTypeUtils.suggestFieldName(foreignTableName, "")
-                            + fieldSuffix);
-
-            final JavaType fieldType = DbreTypeUtils.findTypeForTableName(
-                    managedEntities, foreignTableName, foreignSchemaName);
-            Validate.notNull(
-                    fieldType,
-                    "Attempted to create one-to-one mapped-by field '"
-                            + fieldName
-                            + "' in '"
-                            + destination.getFullyQualifiedTypeName()
-                            + "'"
-                            + getErrorMsg(foreignTable
-                                    .getFullyQualifiedTableName()));
-
-            // Check for existence of same field - ROO-1691
-            while (true) {
-                if (!hasFieldInItd(fieldName)) {
-                    break;
+        /**
+         * mcm - temporary hack to make one-to-one relationships unidirectional
+         * Need to make this configurable from the ROO command line.
+         **/
+        boolean allowBiDirectionalOneToOne = false;
+        if (allowBiDirectionalOneToOne) {
+            for (final ForeignKey exportedKey : table.getExportedKeys()) {
+                final Table exportedKeyForeignTable = exportedKey
+                        .getForeignTable();
+                Validate.notNull(
+                        exportedKeyForeignTable,
+                        "Foreign key table for foreign key '"
+                                + exportedKey.getName()
+                                + "' in table '"
+                                + table.getFullyQualifiedTableName()
+                                + "' does not exist. One-to-one relationship not created");
+                if (exportedKeyForeignTable.isJoinTable()) {
+                    continue;
                 }
-                fieldName = new JavaSymbolName(fieldName.getSymbolName() + "_");
+
+                final String foreignTableName = exportedKeyForeignTable
+                        .getName();
+                final String foreignSchemaName = exportedKeyForeignTable
+                        .getSchema().getName();
+                final Table foreignTable = database.getTable(foreignTableName,
+                        foreignSchemaName);
+                Validate.notNull(
+                        foreignTable,
+                        "Related table '"
+                                + exportedKeyForeignTable
+                                        .getFullyQualifiedTableName()
+                                + "' could not be found but has a foreign-key reference to table '"
+                                + table.getFullyQualifiedTableName() + "'");
+                if (!isOneToOne(foreignTable,
+                        foreignTable.getImportedKey(exportedKey.getName()))) {
+                    continue;
+                }
+                final Short keySequence = exportedKey.getKeySequence();
+                final String fieldSuffix = keySequence != null
+                        && keySequence > 0 ? String.valueOf(keySequence) : "";
+                JavaSymbolName fieldName = new JavaSymbolName(
+                        DbreTypeUtils.suggestFieldName(foreignTableName, "")
+                                + fieldSuffix);
+
+                final JavaType fieldType = DbreTypeUtils.findTypeForTableName(
+                        managedEntities, foreignTableName, foreignSchemaName);
+                Validate.notNull(
+                        fieldType,
+                        "Attempted to create one-to-one mapped-by field '"
+                                + fieldName
+                                + "' in '"
+                                + destination.getFullyQualifiedTypeName()
+                                + "'"
+                                + getErrorMsg(foreignTable
+                                        .getFullyQualifiedTableName()));
+
+                // Check for existence of same field - ROO-1691
+                while (true) {
+                    if (!hasFieldInItd(fieldName)) {
+                        break;
+                    }
+                    fieldName = new JavaSymbolName(fieldName.getSymbolName()
+                            + "_");
+                }
+
+                final JavaSymbolName mappedByFieldName = new JavaSymbolName(
+                        DbreTypeUtils.suggestFieldName(table.getName(),
+                                table.getName())
+                                + fieldSuffix);
+
+                final FieldMetadataBuilder fieldBuilder = getOneToOneMappedByField(
+                        fieldName, fieldType, mappedByFieldName,
+                        exportedKey.getOnUpdate(), exportedKey.getOnDelete());
+                addToBuilder(fieldBuilder);
             }
-
-            final JavaSymbolName mappedByFieldName = new JavaSymbolName(
-                    DbreTypeUtils.suggestFieldName(table.getName(),
-                            table.getName())
-                            + fieldSuffix);
-
-            final FieldMetadataBuilder fieldBuilder = getOneToOneMappedByField(
-                    fieldName, fieldType, mappedByFieldName,
-                    exportedKey.getOnUpdate(), exportedKey.getOnDelete());
-            addToBuilder(fieldBuilder);
         }
     }
 
@@ -734,6 +744,15 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
                 columnBuilder.addBooleanAttribute("updatable", false);
             }
             annotations.add(dateTimeFormatBuilder);
+        }
+
+        // @Type(type="org.hibernate.spatial.GeometryType")
+        if (column.getJdbcType().equals(Column.ORACLE_GEOMETRY_TYPE)) {
+            final AnnotationMetadataBuilder geometryBuilder = new AnnotationMetadataBuilder(
+                    new JavaType("org.hibernate.annotations.Type"));
+            geometryBuilder.addStringAttribute("type",
+                    "org.hibernate.spatial.GeometryType");
+            annotations.add(geometryBuilder);
         }
 
         // Add @Lob for CLOB fields if applicable
