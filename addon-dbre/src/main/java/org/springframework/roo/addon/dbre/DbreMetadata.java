@@ -2,6 +2,7 @@ package org.springframework.roo.addon.dbre;
 
 import static org.springframework.roo.model.JdkJavaType.DATE;
 import static org.springframework.roo.model.JdkJavaType.SET;
+import static org.springframework.roo.model.JdkJavaType.TIMESTAMP;
 import static org.springframework.roo.model.JpaJavaType.CASCADE_TYPE;
 import static org.springframework.roo.model.JpaJavaType.COLUMN;
 import static org.springframework.roo.model.JpaJavaType.JOIN_COLUMN;
@@ -629,10 +630,12 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
 
         // Copy the existing attributes, excluding the "ignoreFields" attribute
         boolean alreadyAdded = false;
-        final AnnotationAttributeValue<?> value = toStringAnnotation
+        AnnotationAttributeValue<?> value = toStringAnnotation
                 .getAttribute(new JavaSymbolName("excludeFields"));
         if (value == null) {
-            return;
+            value = new ArrayAttributeValue<StringAttributeValue>(
+                    new JavaSymbolName("excludeFields"),
+                    new ArrayList<StringAttributeValue>());
         }
 
         // Ensure we have an array of strings
@@ -729,7 +732,7 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
         }
 
         // Add JSR 220 @Temporal annotation to date fields
-        if (fieldType.equals(DATE)) {
+        if (fieldType.equals(DATE) || fieldType.equals(TIMESTAMP)) {
             final AnnotationMetadataBuilder temporalBuilder = new AnnotationMetadataBuilder(
                     TEMPORAL);
             temporalBuilder.addEnumAttribute(VALUE, new EnumDetails(
@@ -738,7 +741,12 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
 
             final AnnotationMetadataBuilder dateTimeFormatBuilder = new AnnotationMetadataBuilder(
                     DATE_TIME_FORMAT);
-            dateTimeFormatBuilder.addStringAttribute("style", "M-");
+            if (fieldType.equals(DATE)) {
+                dateTimeFormatBuilder.addStringAttribute("style", "M-");
+            }
+            else {
+                dateTimeFormatBuilder.addStringAttribute("style", "MM");
+            }
 
             if (fieldName.getSymbolName().equals(CREATED)) {
                 columnBuilder.addBooleanAttribute("updatable", false);
@@ -763,7 +771,13 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
         final FieldMetadataBuilder fieldBuilder = new FieldMetadataBuilder(
                 getId(), Modifier.PRIVATE, annotations, fieldName, fieldType);
         if (fieldName.getSymbolName().equals(CREATED)) {
-            fieldBuilder.setFieldInitializer("new java.util.Date()");
+            if (fieldType.equals(DATE)) {
+                fieldBuilder.setFieldInitializer("new java.util.Date()");
+            }
+            else {
+                fieldBuilder
+                        .setFieldInitializer("new java.sql.Timestamp(new java.util.Date().getTime())");
+            }
         }
         return fieldBuilder;
     }
@@ -786,6 +800,13 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
     private AnnotationMetadataBuilder getJoinColumnAnnotation(
             final Reference reference, final boolean referencedColumn,
             final JavaType fieldType) {
+        return getJoinColumnAnnotation(reference, referencedColumn, fieldType,
+                null);
+    }
+
+    private AnnotationMetadataBuilder getJoinColumnAnnotation(
+            final Reference reference, final boolean referencedColumn,
+            final JavaType fieldType, final Boolean nullable) {
         final Column localColumn = reference.getLocalColumn();
         Validate.notNull(localColumn, "Foreign-key reference local column '"
                 + reference.getLocalColumnName() + "' must not be null");
@@ -805,8 +826,13 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
                     foreignColumn.getEscapedName());
         }
 
-        if (localColumn.isRequired()) {
-            joinColumnBuilder.addBooleanAttribute("nullable", false);
+        if (nullable == null) {
+            if (localColumn.isRequired()) {
+                joinColumnBuilder.addBooleanAttribute("nullable", false);
+            }
+        }
+        else {
+            joinColumnBuilder.addBooleanAttribute("nullable", nullable);
         }
 
         if (fieldType != null) {
@@ -823,9 +849,19 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
     private AnnotationMetadataBuilder getJoinColumnsAnnotation(
             final Set<Reference> references, final JavaType fieldType) {
         final List<NestedAnnotationAttributeValue> arrayValues = new ArrayList<NestedAnnotationAttributeValue>();
+
+        // XXX DiSiD: Nullable attribute will have same value for each
+        // If some column not required, all JoinColumn will be nullable
+        boolean nullable = false;
+        for (final Reference reference : references) {
+            if (!reference.getLocalColumn().isRequired()) {
+                nullable = true;
+            }
+        }
+
         for (final Reference reference : references) {
             final AnnotationMetadataBuilder joinColumnAnnotation = getJoinColumnAnnotation(
-                    reference, true, fieldType);
+                    reference, true, fieldType, nullable);
             arrayValues.add(new NestedAnnotationAttributeValue(
                     new JavaSymbolName(VALUE), joinColumnAnnotation.build()));
         }
