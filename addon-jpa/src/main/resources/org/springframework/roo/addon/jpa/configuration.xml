@@ -56,12 +56,12 @@
             </dependencies>
         </database>
         <database id="ORACLE">
-            <dependencies>
-                <dependency>
-                    <groupId>com.oracle</groupId>
-                    <artifactId>ojdbc14</artifactId>
-                    <version>10.2.0.2</version>
-                </dependency>
+	   <dependencies>
+       		<dependency>
+            		<groupId>com.oracle</groupId>
+            		<artifactId>ojdbc6</artifactId>
+            		<version>11.2.0.3</version>
+        	</dependency>
             </dependencies>
         </database>
         <database id="DB2_EXPRESS_C">
