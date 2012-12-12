@@ -35,6 +35,10 @@
             <name>Spring Roo Repository</name>
             <url>http://spring-roo-repository.springsource.org/release</url>
         </repository>
+		<repository>
+			<id>Hibernate Spatial repo</id>
+			<url>http://www.hibernatespatial.org/repository</url>
+		</repository>
     </repositories>
     <pluginRepositories>
         <pluginRepository>

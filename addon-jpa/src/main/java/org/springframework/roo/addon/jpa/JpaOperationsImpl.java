@@ -1268,6 +1268,8 @@ public class JpaOperationsImpl implements JpaOperations {
                     "org.hibernate.cfg.ImprovedNamingStrategy", persistence));
             properties.appendChild(createPropertyElement(
                     "hibernate.connection.charSet", "UTF-8", persistence));
+			properties.appendChild(createPropertyElement(
+                    "hibernate.show_sql", "true", persistence));
             properties
                     .appendChild(persistence
                             .createComment(" Uncomment the following two properties for JBoss only "));

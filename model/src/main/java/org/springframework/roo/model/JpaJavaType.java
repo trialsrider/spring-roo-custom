@@ -82,6 +82,8 @@ public final class JpaJavaType {
             "javax.persistence.TypedQuery");
     public static final JavaType VERSION = new JavaType(
             "javax.persistence.Version");
+	public static final JavaType MAPS_ID = new JavaType(
+			"javax.persistence.MapsId");
 
     /**
      * Constructor is private to prevent instantiation

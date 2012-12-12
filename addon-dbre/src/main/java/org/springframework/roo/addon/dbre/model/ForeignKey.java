@@ -158,6 +158,15 @@ public class ForeignKey {
         }
         return false;
     }
+	
+    public boolean hasForeignColumn(final Column column) {
+        for (final Reference reference : references) {
+            if (reference.getForeignColumn().equals(column)) {
+                return true;
+            }
+        }
+        return false;
+    }	
 
     public boolean isExported() {
         return exported;

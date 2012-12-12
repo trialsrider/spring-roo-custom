@@ -1,6 +1,15 @@
 package org.springframework.roo.addon.dbre.model;
 
+import static org.springframework.roo.model.JavaType.BOOLEAN_OBJECT;
+import static org.springframework.roo.model.JavaType.BYTE_ARRAY_PRIMITIVE;
+import static org.springframework.roo.model.JavaType.CHAR_OBJECT;
+import static org.springframework.roo.model.JavaType.DOUBLE_OBJECT;
+import static org.springframework.roo.model.JavaType.FLOAT_OBJECT;
+import static org.springframework.roo.model.JavaType.INT_OBJECT;
+import static org.springframework.roo.model.JavaType.LONG_OBJECT;
 import static org.springframework.roo.model.JavaType.OBJECT;
+import static org.springframework.roo.model.JavaType.SHORT_OBJECT;
+import static org.springframework.roo.model.JavaType.STRING;
 import static org.springframework.roo.model.JdkJavaType.ARRAY;
 import static org.springframework.roo.model.JdkJavaType.BIG_DECIMAL;
 import static org.springframework.roo.model.JdkJavaType.BLOB;
@@ -122,7 +131,8 @@ public class Column {
         switch (dataType) {
         case Types.CHAR:
             if (columnSize > 1) {
-                jdbcType = "VARCHAR";
+////				// This did say "VARCHAR".  Was it for an older version of Hibernate??? mcm
+                jdbcType = "CHAR";
                 javaType = STRING;
             }
             else {
@@ -204,7 +214,8 @@ public class Column {
             break;
         case Types.TIMESTAMP:
             jdbcType = "TIMESTAMP";
-            javaType = new JavaType("java.sql.Timestamp");
+        //    javaType = new JavaType("java.sql.Timestamp");
+			javaType = DATE;
             break;
         case Types.CLOB:
             jdbcType = "CLOB";

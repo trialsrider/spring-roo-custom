@@ -13,6 +13,7 @@ import static org.springframework.roo.model.JpaJavaType.MANY_TO_MANY;
 import static org.springframework.roo.model.JpaJavaType.MANY_TO_ONE;
 import static org.springframework.roo.model.JpaJavaType.ONE_TO_MANY;
 import static org.springframework.roo.model.JpaJavaType.ONE_TO_ONE;
+import static org.springframework.roo.model.JpaJavaType.MAPS_ID;
 import static org.springframework.roo.model.JpaJavaType.TEMPORAL;
 import static org.springframework.roo.model.JpaJavaType.TEMPORAL_TYPE;
 import static org.springframework.roo.model.Jsr303JavaType.NOT_NULL;
@@ -348,7 +349,9 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
             // will only get created once.
             final FieldMetadataBuilder fieldBuilder = getOneToOneOrManyToOneField(
                     fieldName, fieldType, foreignKey, MANY_TO_ONE, true);
-            uniqueFields.put(fieldName, fieldBuilder);
+			if (null != fieldBuilder) {
+				uniqueFields.put(fieldName, fieldBuilder);
+			}
         }
 
         for (final FieldMetadataBuilder fieldBuilder : uniqueFields.values()) {
@@ -464,7 +467,9 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
             // will only get created once.
             final FieldMetadataBuilder fieldBuilder = getOneToOneOrManyToOneField(
                     fieldName, fieldType, foreignKey, ONE_TO_ONE, false);
-            uniqueFields.put(fieldName, fieldBuilder);
+			if (null != fieldBuilder) {
+				uniqueFields.put(fieldName, fieldBuilder);
+			}
         }
 
         for (final FieldMetadataBuilder fieldBuilder : uniqueFields.values()) {
@@ -575,8 +580,9 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
             final boolean isVersionField = isVersionField(fieldName)
                     || columnName.equals("version");
             final boolean isCompositeKeyField = isCompositeKeyField(fieldName);
+			final boolean isDiscriminatorField = columnName.equalsIgnoreCase("dtype");
             if (isIdField || isVersionField || isCompositeKeyField
-                    || isForeignKey) {
+                    || isForeignKey || isDiscriminatorField) {
                 continue;
             }
 
@@ -1029,7 +1035,37 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
                 fieldName, fieldType);
     }
 
-    private FieldMetadataBuilder getOneToOneOrManyToOneField(
+//    private FieldMetadataBuilder getOneToOneOrManyToOneField(
+//            final JavaSymbolName fieldName, final JavaType fieldType,
+//            final ForeignKey foreignKey, final JavaType annotationType,
+//            final boolean referencedColumn) {
+//		boolean localColumnIsPrimaryKeyColumn = false;
+//        //  annotations to field
+//        final List<AnnotationMetadataBuilder> annotations = new ArrayList<AnnotationMetadataBuilder>();
+//
+//		// Check for oneToOne where the local column is the primary key
+//		if (foreignKey.getReferenceCount() == 1) {
+//			final Column localColumn = foreignKey.getReferences().iterator().next().getLocalColumn();
+//			if (localColumn.isPrimaryKey()) {
+//				return null;
+////				localColumnIsPrimaryKeyColumn = true;
+////				// Add MapsId annotation to cause child pk to be automatically updated by parent.
+////				annotations.add(new AnnotationMetadataBuilder(MAPS_ID));
+////				annotations.add(new AnnotationMetadataBuilder(NOT_NULL));
+//			}
+//		}
+//
+//        // Add annotation
+//        final AnnotationMetadataBuilder annotationBuilder = new AnnotationMetadataBuilder(
+//                annotationType);
+//        if (foreignKey.isExported() || localColumnIsPrimaryKeyColumn) {
+//            addCascadeType(annotationBuilder, foreignKey.getOnUpdate(),
+//                    foreignKey.getOnDelete());
+//			annotationBuilder.addBooleanAttribute("optional", false);
+//        }
+	
+	
+	    private FieldMetadataBuilder getOneToOneOrManyToOneField(
             final JavaSymbolName fieldName, final JavaType fieldType,
             final ForeignKey foreignKey, final JavaType annotationType,
             final boolean referencedColumn) {
@@ -1042,11 +1078,15 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
         if (foreignKey.isExported()) {
             addCascadeType(annotationBuilder, foreignKey.getOnUpdate(),
                     foreignKey.getOnDelete());
-        }
+        }	
         annotations.add(annotationBuilder);
 
         final Set<Reference> references = foreignKey.getReferences();
         if (references.size() == 1) {
+			final Column localColumn = references.iterator().next().getLocalColumn();
+			if (annotationType.equals(ONE_TO_ONE) && localColumn.isPrimaryKey()) {
+				return null;
+			}
             // Add @JoinColumn annotation
             annotations.add(getJoinColumnAnnotation(references.iterator()
                     .next(), referencedColumn, fieldType));

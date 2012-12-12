@@ -10,6 +10,7 @@ import static org.springframework.roo.model.JpaJavaType.MANY_TO_MANY;
 import static org.springframework.roo.model.JpaJavaType.MANY_TO_ONE;
 import static org.springframework.roo.model.JpaJavaType.ONE_TO_MANY;
 import static org.springframework.roo.model.JpaJavaType.ONE_TO_ONE;
+import static org.springframework.roo.model.JpaJavaType.MAPS_ID;
 import static org.springframework.roo.model.JpaJavaType.TRANSIENT;
 import static org.springframework.roo.model.JpaJavaType.VERSION;
 
@@ -46,6 +47,7 @@ public class AnnotationMetadataBuilder implements Builder<AnnotationMetadata> {
     public static final AnnotationMetadata JPA_MANY_TO_ONE_ANNOTATION = getInstance(MANY_TO_ONE);
     public static final AnnotationMetadata JPA_ONE_TO_MANY_ANNOTATION = getInstance(ONE_TO_MANY);
     public static final AnnotationMetadata JPA_ONE_TO_ONE_ANNOTATION = getInstance(ONE_TO_ONE);
+	public static final AnnotationMetadata JPA_MAPS_ID_ANNOTATION = getInstance(MAPS_ID);
     public static final AnnotationMetadata JPA_TRANSIENT_ANNOTATION = getInstance(TRANSIENT);
     public static final AnnotationMetadata JPA_VERSION_ANNOTATION = getInstance(VERSION);
 
