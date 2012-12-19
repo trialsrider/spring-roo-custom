@@ -1,16 +1,16 @@
 package org.springframework.roo.addon.dbre;
 
-import static org.springframework.roo.model.JpaJavaType.TABLE;
-import static org.springframework.roo.model.RooJavaType.ROO_JPA_ACTIVE_RECORD;
-import static org.springframework.roo.model.RooJavaType.ROO_JPA_ENTITY;
-
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-
 import java.util.Properties;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.springframework.roo.addon.dbre.model.Database;
 import org.springframework.roo.addon.dbre.model.DbreModelService;
 import org.springframework.roo.addon.dbre.model.Table;
 import org.springframework.roo.classpath.details.ClassOrInterfaceTypeDetails;
@@ -20,7 +20,10 @@ import org.springframework.roo.classpath.details.annotations.AnnotationMetadata;
 import org.springframework.roo.model.JavaPackage;
 import org.springframework.roo.model.JavaSymbolName;
 import org.springframework.roo.model.JavaType;
+import static org.springframework.roo.model.JpaJavaType.TABLE;
 import org.springframework.roo.model.ReservedWords;
+import static org.springframework.roo.model.RooJavaType.ROO_JPA_ACTIVE_RECORD;
+import static org.springframework.roo.model.RooJavaType.ROO_JPA_ENTITY;
 
 /**
  * Provides methods to find types based on table names and to suggest type and
@@ -61,9 +64,47 @@ public abstract class DbreTypeUtils {
     public static Properties getTableMappings() {
         return tableMappings;
     }
+	
+	/**
+	 * This probably needs to move to a different class and cache values...
+	 * mcm
+	 * @param file
+	 * @return 
+	 */
+    public static Properties openProperties(File file) {
+        Properties props = new Properties();
+        try {
+            InputStream in = new BufferedInputStream(new FileInputStream(file));
+            if (file.getName().endsWith(".xml")) {
+                props.loadFromXML(in);
+            }
+            else {
+                props.load(in);
+            }
+        }
+        catch (Exception e) {
+            throw new RuntimeException("unable to process property file", e);
+        }
+        return props;
+    }	
 
-    public static void setTableMappings(Properties tableMappings) {
-        DbreTypeUtils.tableMappings = tableMappings;
+    public static void initAliasMappings(String aliasPropertiesFilename, Database database) {
+		boolean initialized = false;
+		if (aliasPropertiesFilename != null && aliasPropertiesFilename.length() > 1) {
+			File tableNameMapper = new File(aliasPropertiesFilename);
+			if (tableNameMapper != null && tableNameMapper.isFile()
+					&& tableNameMapper.canRead()
+					&& tableNameMapper.getName() != null) {
+				database.setAliasPropertiesFilename(tableNameMapper.getPath());
+				tableMappings = openProperties(tableNameMapper);
+				initialized = true;
+			} 
+			
+			if (!initialized) {
+				tableMappings = null;
+				database.setAliasPropertiesFilename(null);
+			}
+		}
     }
 
     /**
@@ -166,27 +207,22 @@ public abstract class DbreTypeUtils {
     private static String getName(String str, final boolean isField,
             String tableName, boolean isPrimaryKey) {
         String dbElementName = str;
-        // remove the table name portion of the field.
-        if (isField && !isPrimaryKey && (tableName.length() > 0)
-                && (str.length() > tableName.length())
-                && (str.startsWith(tableName))) {
-            dbElementName = str.substring(tableName.length());
-        }
         if (DbreTypeUtils.tableMappings != null) {
-            // apply any matching tableMapping entries
-            boolean matchComplete = false;
-            // while (matchComplete == false) {
-            // matchComplete = true;
-            for (Entry<Object, Object> mapping : DbreTypeUtils.tableMappings
-                    .entrySet()) {
-                if (dbElementName.matches("(?i)" + mapping.getKey())) {
-                    dbElementName = dbElementName.replaceAll(
-                            "(?i)" + mapping.getKey(),
-                            String.valueOf(mapping.getValue()));
-                    // matchComplete = false; // need to rematch
-                }
-            }
-            // }
+			dbElementName = DbreTypeUtils.tableMappings.getProperty(str);
+			if (dbElementName != null) {        
+				if (isField && !isPrimaryKey && (tableName.length() > 0)) {
+					String tableLogicalName = DbreTypeUtils.tableMappings.getProperty(tableName);
+					if (tableLogicalName != null 
+						&& dbElementName.length() > (tableLogicalName.length() + 1)
+						&& dbElementName.startsWith(tableLogicalName)) {
+							// remove the table name portion of the field. (Note: The +1 steps over the space after the table name
+							dbElementName = dbElementName.substring(tableLogicalName.length() + 1);
+					}
+				}
+			} else {
+				System.out.println("Database element name: " + str + " not found in alias file.");
+				dbElementName = str;
+			}
         }
         final StringBuilder result = new StringBuilder();
         boolean isDelimChar = false;

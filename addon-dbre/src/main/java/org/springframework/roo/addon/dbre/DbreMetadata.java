@@ -1,5 +1,6 @@
 package org.springframework.roo.addon.dbre;
 
+import java.io.File;
 import static org.springframework.roo.model.JdkJavaType.DATE;
 import static org.springframework.roo.model.JdkJavaType.SET;
 import static org.springframework.roo.model.JdkJavaType.TIMESTAMP;
@@ -120,7 +121,10 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
         Validate.notNull(identifierHolder, "Identifier holder required");
         Validate.notNull(managedEntities, "Managed entities required");
         Validate.notNull(database, "Database required");
-
+		
+		String aliasPropertyFilename = database.getAliasPropertiesFilename();
+		DbreTypeUtils.initAliasMappings(aliasPropertyFilename, database);
+		
         this.annotationValues = annotationValues;
         this.identifierHolder = identifierHolder;
         this.versionField = versionField;
@@ -1090,6 +1094,9 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
             // Add @JoinColumn annotation
             annotations.add(getJoinColumnAnnotation(references.iterator()
                     .next(), referencedColumn, fieldType));
+			if (localColumn.isRequired()) {
+				annotations.add(new AnnotationMetadataBuilder(NOT_NULL));
+			}
         }
         else {
             // Add @JoinColumns annotation

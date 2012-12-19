@@ -3,7 +3,6 @@ package org.springframework.roo.addon.dbre.model;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.Stack;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.tuple.Pair;
@@ -59,6 +58,7 @@ public class DatabaseContentHandler extends DefaultHandler {
     private final Set<Table> tables = new LinkedHashSet<Table>();
 
     private boolean testAutomatically;
+	private String aliasPropertiesFile;
 
     /**
      * Constructor
@@ -97,6 +97,9 @@ public class DatabaseContentHandler extends DefaultHandler {
             if (option.getKey().equals("testAutomatically")) {
                 testAutomatically = Boolean.parseBoolean(option.getValue());
             }
+			if (option.getKey().equals(DatabaseXmlUtils.ALIAS_PROPERTIES_FILE)) {
+				aliasPropertiesFile = option.getValue();
+			}
         }
         else if (qName.equals("table")) {
             tables.add((Table) tmp);
@@ -130,6 +133,7 @@ public class DatabaseContentHandler extends DefaultHandler {
             database.setIncludeNonPortableAttributes(includeNonPortableAttributes);
             database.setActiveRecord(activeRecord);
             database.setTestAutomatically(testAutomatically);
+			database.setAliasPropertiesFilename(aliasPropertiesFile);
         }
         else {
             stack.push(tmp);

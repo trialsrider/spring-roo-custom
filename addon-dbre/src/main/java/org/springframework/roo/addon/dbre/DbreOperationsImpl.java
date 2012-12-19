@@ -50,7 +50,7 @@ public class DbreOperationsImpl implements DbreOperations {
     private static final Logger LOGGER = HandlerUtils
             .getLogger(DbreOperationsImpl.class);
 
-    @Reference private DbreModelService dbreModelService;
+@Reference private DbreModelService dbreModelService;
     @Reference private FileManager fileManager;
     @Reference private PathResolver pathResolver;
     @Reference private ProjectOperations projectOperations;
@@ -84,22 +84,7 @@ public class DbreOperationsImpl implements DbreOperations {
                         .isFeatureInstalledInFocusedModule(FeatureNames.JPA);
     }
 
-    private Properties openProperties(File file) {
-        Properties props = new Properties();
-        try {
-            InputStream in = new BufferedInputStream(new FileInputStream(file));
-            if (file.getName().endsWith(".xml")) {
-                props.loadFromXML(in);
-            }
-            else {
-                props.load(in);
-            }
-        }
-        catch (Exception e) {
-            throw new RuntimeException("unable to process property file", e);
-        }
-        return props;
-    }
+
 
     private void outputSchemaXml(final Database database,
             final Set<Schema> schemas, final File file,
@@ -142,23 +127,13 @@ public class DbreOperationsImpl implements DbreOperations {
             final boolean includeNonPortableAttributes,
             final boolean activeRecord, final File tableNameMapper) {
 
-        DbreTypeUtils.setTableMappings(null);
-        if (tableNameMapper != null && tableNameMapper.isFile()
-                && tableNameMapper.canRead()
-                && tableNameMapper.getName() != null) {
-            // if (tableNameMapper.getName().endsWith(".groovy")) {
-            // //
-            // DbreTypeUtils.setTableMapper(openGroovyScript(tableNameMapper));
-            // DbreTypeUtils.setTableMapper(tableNameMapper);
-            // }
-            // else {
-            DbreTypeUtils.setTableMappings(openProperties(tableNameMapper));
-            // }
-        }
-
-        // Force it to refresh the database from the actual JDBC connection
+		// Force it to refresh the database from the actual JDBC connection
         final Database database = dbreModelService.refreshDatabase(schemas,
                 view, includeTables, excludeTables);
+
+		// Check on tableNameMapper param (File vs String) mcm
+		DbreTypeUtils.initAliasMappings((tableNameMapper != null) ? tableNameMapper.getPath() : null, database);
+
         database.setModuleName(projectOperations.getFocusedModuleName());
         database.setActiveRecord(activeRecord);
         database.setDestinationPackage(destinationPackage);

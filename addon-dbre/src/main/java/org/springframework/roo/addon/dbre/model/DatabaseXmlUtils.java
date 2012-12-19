@@ -23,6 +23,7 @@ import org.w3c.dom.Element;
  * @since 1.1
  */
 public abstract class DatabaseXmlUtils {
+	public static final String ALIAS_PROPERTIES_FILE = "aliasPropertiesFile";
 
     public static enum IndexType {
         INDEX, UNIQUE
@@ -139,6 +140,7 @@ public abstract class DatabaseXmlUtils {
                 database.isIncludeNonPortableAttributes());
         addBooleanOptionElement(document, databaseElement, "testAutomatically",
                 database.isTestAutomatically());
+		databaseElement.appendChild(createOptionElement(ALIAS_PROPERTIES_FILE, database.getAliasPropertiesFilename(), document));
 
         for (final Table table : database.getTables()) {
             final Element tableElement = document.createElement("table");
@@ -345,6 +347,9 @@ public abstract class DatabaseXmlUtils {
                 database.setIncludeNonPortableAttributes(Boolean
                         .parseBoolean(optionElement.getAttribute("value")));
             }
+			if (optionElement.getAttribute("key").equals(ALIAS_PROPERTIES_FILE)) {
+				database.setAliasPropertiesFilename(optionElement.getAttribute("value"));
+			}
         }
 
         return database;

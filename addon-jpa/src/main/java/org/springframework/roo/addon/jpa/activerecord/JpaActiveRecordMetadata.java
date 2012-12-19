@@ -58,6 +58,7 @@ public class JpaActiveRecordMetadata extends
     private String entityName;
     private MethodMetadata findMethod;
     private FieldMetadata identifierField;
+
     private boolean isGaeEnabled;
     private JpaActiveRecordMetadata parent;
     private String plural;
@@ -133,7 +134,15 @@ public class JpaActiveRecordMetadata extends
         itdTypeDetails = builder.build();
     }
 
-    public static String createIdentifier(final JavaType javaType,
+	public FieldMetadata getIdentifierField() {
+		return identifierField;
+	}
+
+	public void setIdentifierField(FieldMetadata identifierField) {
+		this.identifierField = identifierField;
+	}
+	
+	public static String createIdentifier(final JavaType javaType,
             final LogicalPath path) {
         return PhysicalTypeIdentifierNamingUtils.createIdentifier(
                 PROVIDES_TYPE_STRING, javaType, path);

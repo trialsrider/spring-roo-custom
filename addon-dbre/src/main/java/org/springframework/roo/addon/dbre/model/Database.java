@@ -43,6 +43,9 @@ public class Database {
 
     /** Whether to create integration tests */
     private boolean testAutomatically;
+	
+	/** Property filename for name aliases.  Used to create cleaner class/field names from database table/column names **/
+	private String aliasPropertiesFilename;
 
     /**
      * Constructor
@@ -340,4 +343,11 @@ public class Database {
                         tables, destinationPackage, testAutomatically,
                         includeNonPortableAttributes);
     }
+
+	public void setAliasPropertiesFilename(String aliasPropertiesFilename) {
+		this.aliasPropertiesFilename = aliasPropertiesFilename;
+	}
+	public String getAliasPropertiesFilename() {
+		return this.aliasPropertiesFilename;
+	}
 }

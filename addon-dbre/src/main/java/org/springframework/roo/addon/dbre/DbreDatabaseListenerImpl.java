@@ -701,6 +701,7 @@ public class DbreDatabaseListenerImpl extends AbstractHashCodeTrackingMetadataNo
 				.findClassesOrInterfaceDetailsWithAnnotation(ROO_DB_MANAGED);
 		// Determine whether to create "active record" CRUD methods
 		database.setActiveRecord(isActiveRecord(database, managedEntities));
+		DbreTypeUtils.initAliasMappings(database.getAliasPropertiesFilename(), database);
 
 		// Lookup the relevant destination package if not explicitly given
 		final JavaPackage destinationPackage = getDestinationPackage(database,

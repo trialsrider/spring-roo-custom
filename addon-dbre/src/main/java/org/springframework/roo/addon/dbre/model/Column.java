@@ -25,292 +25,295 @@ import org.springframework.roo.model.JavaType;
 
 /**
  * Represents a column in the database model.
- * 
+ *
  * @author Alan Stewart.
  * @since 1.1
  */
 public class Column {
-    public static final String ORACLE_GEOMETRY_TYPE = "SDO_GEOMETRY";
-    private boolean autoIncrement;
-    private final int columnSize;
-    private final int dataType;
-    private String defaultValue;
-    private String description;
-    private JavaType javaType;
-    private String jdbcType;
-    private final String name;
-    private boolean primaryKey;
-    private boolean required;
-    private int scale = 0;
-    private final String typeName;
-    private boolean unique;
 
-    Column(final String name, final int dataType, final String typeName,
-            final int columnSize, final int scale) {
-        Validate.notBlank(name, "Column name required");
-        this.name = name;
-        this.dataType = dataType;
-        this.typeName = typeName;
-        this.columnSize = columnSize;
-        this.scale = scale;
-        init();
-    }
+	public static final String ORACLE_GEOMETRY_TYPE = "SDO_GEOMETRY";
+	private boolean autoIncrement;
+	private final int columnSize;
+	private final int dataType;
+	private String defaultValue;
+	private String description;
+	private JavaType javaType;
+	private String jdbcType;
+	private final String name;
+	private boolean primaryKey;
+	private boolean required;
+	private int scale = 0;
+	private final String typeName;
+	private boolean unique;
 
-    @Override
-    public boolean equals(final Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Column other = (Column) obj;
-        if (name == null) {
-            if (other.name != null) {
-                return false;
-            }
-        }
-        else if (!name.equals(other.name)) {
-            return false;
-        }
-        return true;
-    }
+	Column(final String name, final int dataType, final String typeName,
+			final int columnSize, final int scale) {
+		Validate.notBlank(name, "Column name required");
+		this.name = name;
+		this.dataType = dataType;
+		this.typeName = typeName;
+		this.columnSize = columnSize;
+		this.scale = scale;
+		init();
+	}
 
-    public int getColumnSize() {
-        return columnSize;
-    }
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final Column other = (Column) obj;
+		if (name == null) {
+			if (other.name != null) {
+				return false;
+			}
+		} else if (!name.equals(other.name)) {
+			return false;
+		}
+		return true;
+	}
 
-    public int getDataType() {
-        return dataType;
-    }
+	public int getColumnSize() {
+		return columnSize;
+	}
 
-    public String getDefaultValue() {
-        return defaultValue;
-    }
+	public int getDataType() {
+		return dataType;
+	}
 
-    public String getDescription() {
-        return description;
-    }
+	public String getDefaultValue() {
+		return defaultValue;
+	}
 
-    public String getEscapedName() {
-        return name.replaceAll("\\\\", "\\\\\\\\");
-    }
+	public String getDescription() {
+		return description;
+	}
 
-    public JavaType getJavaType() {
-        return javaType;
-    }
+	public String getEscapedName() {
+		return name.replaceAll("\\\\", "\\\\\\\\");
+	}
 
-    public String getJdbcType() {
-        return jdbcType;
-    }
+	public JavaType getJavaType() {
+		return javaType;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public String getJdbcType() {
+		return jdbcType;
+	}
 
-    public int getScale() {
-        return scale;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public String getTypeName() {
-        return typeName;
-    }
+	public int getScale() {
+		return scale;
+	}
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + (name == null ? 0 : name.hashCode());
-        return result;
-    }
+	public String getTypeName() {
+		return typeName;
+	}
 
-    private void init() {
-        switch (dataType) {
-        case Types.CHAR:
-            if (columnSize > 1) {
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (name == null ? 0 : name.hashCode());
+		return result;
+	}
+
+	private void init() {
+		switch (dataType) {
+			case Types.CHAR:
+				if (columnSize > 1) {
 ////				// This did say "VARCHAR".  Was it for an older version of Hibernate??? mcm
-                jdbcType = "CHAR";
-                javaType = STRING;
-            }
-            else {
-                jdbcType = "CHAR";
-                javaType = CHAR_OBJECT;
-            }
-            break;
-        case Types.VARCHAR:
-            jdbcType = "VARCHAR";
-            javaType = STRING;
-            break;
-        case Types.LONGVARCHAR:
-            jdbcType = "LONGVARCHAR";
-            javaType = STRING;
-            break;
-        case Types.NUMERIC:
-            jdbcType = "NUMERIC";
-            javaType = BIG_DECIMAL;
-            break;
-        case Types.DECIMAL:
-            jdbcType = "DECIMAL";
-            javaType = BIG_DECIMAL;
-            break;
-        case Types.BOOLEAN:
-            jdbcType = "BOOLEAN";
-            javaType = BOOLEAN_OBJECT;
-            break;
-        case Types.BIT:
-            jdbcType = "BIT";
-            javaType = BOOLEAN_OBJECT;
-            break;
-        case Types.TINYINT:
-            jdbcType = "TINYINT";
-            javaType = columnSize > 1 ? SHORT_OBJECT : BOOLEAN_OBJECT; // ROO-1860
-            break;
-        case Types.SMALLINT:
-            jdbcType = "SMALLINT";
-            javaType = SHORT_OBJECT;
-            break;
-        case Types.INTEGER:
-            jdbcType = "INTEGER";
-            javaType = INT_OBJECT;
-            break;
-        case Types.BIGINT:
-            jdbcType = "BIGINT";
-            javaType = LONG_OBJECT;
-            break;
-        case Types.REAL:
-            jdbcType = "REAL";
-            javaType = FLOAT_OBJECT;
-            break;
-        case Types.FLOAT:
-            jdbcType = "FLOAT";
-            javaType = DOUBLE_OBJECT;
-            break;
-        case Types.DOUBLE:
-            jdbcType = "DOUBLE";
-            javaType = DOUBLE_OBJECT;
-            break;
-        case Types.BINARY:
-            jdbcType = "BINARY";
-            javaType = BYTE_ARRAY_PRIMITIVE;
-            break;
-        case Types.VARBINARY:
-            jdbcType = "VARBINARY";
-            javaType = BYTE_ARRAY_PRIMITIVE;
-            break;
-        case Types.LONGVARBINARY:
-            jdbcType = "LONGVARBINARY";
-            javaType = BYTE_ARRAY_PRIMITIVE;
-            break;
-        case Types.DATE:
-            jdbcType = "DATE";
-            javaType = DATE;
-            break;
-        case Types.TIME:
-            jdbcType = "TIME";
-            javaType = DATE;
-            break;
-        case Types.TIMESTAMP:
-            jdbcType = "TIMESTAMP";
-        //    javaType = new JavaType("java.sql.Timestamp");
-			javaType = DATE;
-            break;
-        case Types.CLOB:
-            jdbcType = "CLOB";
-            javaType = CLOB;
-            break;
-        case Types.BLOB:
-            jdbcType = "BLOB";
-            javaType = BLOB;
-            break;
-        case Types.ARRAY:
-            jdbcType = "ARRAY";
-            javaType = ARRAY;
-            break;
-        case Types.DISTINCT:
-            jdbcType = "DISTINCT";
-            javaType = STRING;
-            break;
-        case Types.REF:
-            jdbcType = "REF";
-            javaType = REF;
-            break;
-        case Types.STRUCT:
-            jdbcType = "STRUCT";
-            javaType = STRUCT;
-            break;
-        case Types.NULL:
-            jdbcType = "NULL";
-            break;
-        case Types.JAVA_OBJECT:
-            jdbcType = "JAVA_OBJECT";
-            javaType = OBJECT;
-            break;
-        case Types.OTHER:
-            if (typeName.equals(ORACLE_GEOMETRY_TYPE)) {
-                jdbcType = ORACLE_GEOMETRY_TYPE;
-                javaType = new JavaType("com.vividsolutions.jts.geom.Geometry");
-            }
-            else {
-				jdbcType = "OTHER";
-                javaType = JavaType.STRING;
-            }
-            break;
-        default:
-            jdbcType = "VARCHAR";
-            javaType = STRING;
-            break;
-        }
-    }
+					jdbcType = "CHAR";
+					javaType = STRING;
+				} else {
+					jdbcType = "CHAR";
+					javaType = CHAR_OBJECT;
+				}
+				break;
+			case Types.VARCHAR:
+				jdbcType = "VARCHAR";
+				javaType = STRING;
+				break;
+			case Types.LONGVARCHAR:
+				jdbcType = "LONGVARCHAR";
+				javaType = STRING;
+				break;
+			case Types.NUMERIC:
+				jdbcType = "NUMERIC";
+				javaType = BIG_DECIMAL;
+				break;
+			case Types.DECIMAL:
+				if (this.getScale() == 0 && this.getColumnSize() <= 10) {
+					jdbcType = "INTEGER";
+					javaType = INT_OBJECT;
+				} else {
+					jdbcType = "DECIMAL";
+					javaType = BIG_DECIMAL;
+				}
+				break;
+			case Types.BOOLEAN:
+				jdbcType = "BOOLEAN";
+				javaType = BOOLEAN_OBJECT;
+				break;
+			case Types.BIT:
+				jdbcType = "BIT";
+				javaType = BOOLEAN_OBJECT;
+				break;
+			case Types.TINYINT:
+				jdbcType = "TINYINT";
+				javaType = columnSize > 1 ? SHORT_OBJECT : BOOLEAN_OBJECT; // ROO-1860
+				break;
+			case Types.SMALLINT:
+				jdbcType = "SMALLINT";
+				javaType = SHORT_OBJECT;
+				break;
+			case Types.INTEGER:
+				jdbcType = "INTEGER";
+				javaType = INT_OBJECT;
+				break;
+			case Types.BIGINT:
+				jdbcType = "BIGINT";
+				javaType = LONG_OBJECT;
+				break;
+			case Types.REAL:
+				jdbcType = "REAL";
+				javaType = FLOAT_OBJECT;
+				break;
+			case Types.FLOAT:
+				jdbcType = "FLOAT";
+				javaType = DOUBLE_OBJECT;
+				break;
+			case Types.DOUBLE:
+				jdbcType = "DOUBLE";
+				javaType = DOUBLE_OBJECT;
+				break;
+			case Types.BINARY:
+				jdbcType = "BINARY";
+				javaType = BYTE_ARRAY_PRIMITIVE;
+				break;
+			case Types.VARBINARY:
+				jdbcType = "VARBINARY";
+				javaType = BYTE_ARRAY_PRIMITIVE;
+				break;
+			case Types.LONGVARBINARY:
+				jdbcType = "LONGVARBINARY";
+				javaType = BYTE_ARRAY_PRIMITIVE;
+				break;
+			case Types.DATE:
+				jdbcType = "DATE";
+				javaType = DATE;
+				break;
+			case Types.TIME:
+				jdbcType = "TIME";
+				javaType = DATE;
+				break;
+			case Types.TIMESTAMP:
+				jdbcType = "TIMESTAMP";
+				//    javaType = new JavaType("java.sql.Timestamp");
+				javaType = DATE;
+				break;
+			case Types.CLOB:
+				jdbcType = "CLOB";
+				javaType = CLOB;
+				break;
+			case Types.BLOB:
+				jdbcType = "BLOB";
+				javaType = BLOB;
+				break;
+			case Types.ARRAY:
+				jdbcType = "ARRAY";
+				javaType = ARRAY;
+				break;
+			case Types.DISTINCT:
+				jdbcType = "DISTINCT";
+				javaType = STRING;
+				break;
+			case Types.REF:
+				jdbcType = "REF";
+				javaType = REF;
+				break;
+			case Types.STRUCT:
+				jdbcType = "STRUCT";
+				javaType = STRUCT;
+				break;
+			case Types.NULL:
+				jdbcType = "NULL";
+				break;
+			case Types.JAVA_OBJECT:
+				jdbcType = "JAVA_OBJECT";
+				javaType = OBJECT;
+				break;
+			case Types.OTHER:
+				if (typeName.equals(ORACLE_GEOMETRY_TYPE)) {
+					jdbcType = ORACLE_GEOMETRY_TYPE;
+					javaType = new JavaType("com.vividsolutions.jts.geom.Geometry");
+				} else {
+					jdbcType = "OTHER";
+					javaType = JavaType.STRING;
+				}
+				break;
+			default:
+				jdbcType = "VARCHAR";
+				javaType = STRING;
+				break;
+		}
+	}
 
-    public boolean isAutoIncrement() {
-        return autoIncrement;
-    }
+	public boolean isAutoIncrement() {
+		return autoIncrement;
+	}
 
-    public boolean isPrimaryKey() {
-        return primaryKey;
-    }
+	public boolean isPrimaryKey() {
+		return primaryKey;
+	}
 
-    public boolean isRequired() {
-        return required;
-    }
+	public boolean isRequired() {
+		return required;
+	}
 
-    public boolean isUnique() {
-        return unique;
-    }
+	public boolean isUnique() {
+		return unique;
+	}
 
-    public void setAutoIncrement(final boolean autoIncrement) {
-        this.autoIncrement = autoIncrement;
-    }
+	public void setAutoIncrement(final boolean autoIncrement) {
+		this.autoIncrement = autoIncrement;
+	}
 
-    public void setDefaultValue(final String defaultValue) {
-        this.defaultValue = defaultValue;
-    }
+	public void setDefaultValue(final String defaultValue) {
+		this.defaultValue = defaultValue;
+	}
 
-    public void setDescription(final String description) {
-        this.description = description;
-    }
+	public void setDescription(final String description) {
+		this.description = description;
+	}
 
-    public void setPrimaryKey(final boolean primaryKey) {
-        this.primaryKey = primaryKey;
-    }
+	public void setPrimaryKey(final boolean primaryKey) {
+		this.primaryKey = primaryKey;
+	}
 
-    public void setRequired(final boolean required) {
-        this.required = required;
-    }
+	public void setRequired(final boolean required) {
+		this.required = required;
+	}
 
-    public void setUnique(final boolean unique) {
-        this.unique = unique;
-    }
+	public void setUnique(final boolean unique) {
+		this.unique = unique;
+	}
 
-    @Override
-    public String toString() {
-        return String
-                .format("Column [name=%s, dataType=%s, typeName=%s, columnSize=%s, scale=%s, description=%s, primaryKey=%s, required=%s, unique=%s, autoIncrement=%s, jdbcType=%s, javaType=%s, defaultValue=%s]",
-                        name, dataType, typeName, columnSize, scale,
-                        description, primaryKey, required, unique,
-                        autoIncrement, jdbcType, javaType, defaultValue);
-    }
+	@Override
+	public String toString() {
+		return String
+				.format("Column [name=%s, dataType=%s, typeName=%s, columnSize=%s, scale=%s, description=%s, primaryKey=%s, required=%s, unique=%s, autoIncrement=%s, jdbcType=%s, javaType=%s, defaultValue=%s]",
+				name, dataType, typeName, columnSize, scale,
+				description, primaryKey, required, unique,
+				autoIncrement, jdbcType, javaType, defaultValue);
+	}
 }
