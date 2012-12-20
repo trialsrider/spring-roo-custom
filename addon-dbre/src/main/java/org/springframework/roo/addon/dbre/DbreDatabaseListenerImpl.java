@@ -8,6 +8,7 @@ import static org.springframework.roo.model.RooJavaType.ROO_JAVA_BEAN;
 import static org.springframework.roo.model.RooJavaType.ROO_JPA_ACTIVE_RECORD;
 import static org.springframework.roo.model.RooJavaType.ROO_JPA_ENTITY;
 import static org.springframework.roo.model.RooJavaType.ROO_TO_STRING;
+import static org.springframework.roo.model.RooJavaType.ROO_FX_CLASS;
 import static org.springframework.roo.model.JpaJavaType.INHERITANCE;
 import static org.springframework.roo.model.JpaJavaType.INHERITANCE_TYPE;
 
@@ -186,6 +187,9 @@ public class DbreDatabaseListenerImpl extends AbstractHashCodeTrackingMetadataNo
 
 		// Add @RooDbManaged
 		annotations.add(getRooDbManagedAnnotation());
+		
+		// Add FXClass annotation to cause auto-generation of actionscript classes.
+		annotations.add(getFXClassAnnotation());
 
 		final List<JavaType> extendsTypes = new ArrayList<JavaType>();
 
@@ -513,6 +517,11 @@ public class DbreDatabaseListenerImpl extends AbstractHashCodeTrackingMetadataNo
 		rooDbManagedBuilder.addBooleanAttribute("automaticallyDelete", true);
 		return rooDbManagedBuilder;
 	}
+	
+	private AnnotationMetadataBuilder getFXClassAnnotation() {
+		final AnnotationMetadataBuilder rooFXClassBuilder = new AnnotationMetadataBuilder(ROO_FX_CLASS);
+		return rooFXClassBuilder;
+	}	
 
 	/**
 	 * Indicates whether the given entity has the standard annotations applied
@@ -843,4 +852,6 @@ public class DbreDatabaseListenerImpl extends AbstractHashCodeTrackingMetadataNo
 	private boolean foreignKeyIsPrimaryKey(org.springframework.roo.addon.dbre.model.Reference reference) {
 		return reference.getForeignColumn().isPrimaryKey();
 	}
+
+
 }
