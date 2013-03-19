@@ -19,7 +19,9 @@ public final class RooJavaType {
     public static final JavaType ROO_DB_MANAGED = new JavaType(
             "org.springframework.roo.addon.dbre.RooDbManaged");
 	public static final JavaType ROO_FX_CLASS = new JavaType(
-            "com.farata.dto2fx.annotations.FXClass");	
+            "com.farata.dto2fx.annotations.FXClass");
+	public static final JavaType ROO_FX_CLASS_KIND = new JavaType(
+            "com.farata.dto2fx.annotations.FXClassKind");
     public static final JavaType ROO_EDITOR = new JavaType(
             "org.springframework.roo.addon.property.editor.RooEditor");
     public static final JavaType ROO_EQUALS = new JavaType(

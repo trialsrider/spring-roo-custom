@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -47,6 +48,7 @@ public abstract class DbreTypeUtils {
     // The annotation attributes from which to read the db table name
     // Linked to preserve the iteration order below
     private static final Map<JavaType, JavaSymbolName> TABLE_ATTRIBUTES = new LinkedHashMap<JavaType, JavaSymbolName>();
+	private static final HashSet<String>missingFromAliasSet = new HashSet<String>();
 
     static {
         TABLE_ATTRIBUTES.put(TABLE, NAME_ATTRIBUTE);
@@ -220,7 +222,15 @@ public abstract class DbreTypeUtils {
 					}
 				}
 			} else {
-				System.out.println("Database element name: " + str + " not found in alias file.");
+				if (isField) {
+					String columnAndTable = str + ", " + tableName;
+					if (!missingFromAliasSet.contains(columnAndTable)) {
+						System.out.println("Missing from alias: " + columnAndTable);
+						missingFromAliasSet.add(columnAndTable);
+					}
+				} else {
+					System.out.println(" Database table: " + str + " not found in alias file.");
+				}
 				dbElementName = str;
 			}
         }

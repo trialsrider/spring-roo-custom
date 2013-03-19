@@ -8,7 +8,8 @@ import static org.springframework.roo.model.RooJavaType.ROO_JAVA_BEAN;
 import static org.springframework.roo.model.RooJavaType.ROO_JPA_ACTIVE_RECORD;
 import static org.springframework.roo.model.RooJavaType.ROO_JPA_ENTITY;
 import static org.springframework.roo.model.RooJavaType.ROO_TO_STRING;
-import static org.springframework.roo.model.RooJavaType.ROO_FX_CLASS;
+// import static org.springframework.roo.model.RooJavaType.ROO_FX_CLASS;
+// import static org.springframework.roo.model.RooJavaType.ROO_FX_CLASS_KIND;
 import static org.springframework.roo.model.JpaJavaType.INHERITANCE;
 import static org.springframework.roo.model.JpaJavaType.INHERITANCE_TYPE;
 
@@ -81,6 +82,7 @@ public class DbreDatabaseListenerImpl extends AbstractHashCodeTrackingMetadataNo
 	private static final String PRIMARY_KEY_SUFFIX = "PK";
 	private static final String VERSION = "version";
 	private static final String VERSION_FIELD = "versionField";
+	public static final String ENUM_ROO_FX_CLASS_KIND_REMOTE = "REMOTE";
 	@Reference
 	private DbreModelService dbreModelService;
 	@Reference
@@ -104,7 +106,9 @@ public class DbreDatabaseListenerImpl extends AbstractHashCodeTrackingMetadataNo
 				ROO_IDENTIFIER);
 		identifierBuilder.addBooleanAttribute(DB_MANAGED.getSymbolName(), true);
 		identifierAnnotations.add(identifierBuilder);
-
+		// Flag the identifier class as needing to have a corresponding ActionScript class generated.
+//		identifierAnnotations.add(getFXClassAnnotation());
+		
 		// Produce identifier itself
 		final String declaredByMetadataId = PhysicalTypeIdentifier
 				.createIdentifier(identifierType, projectOperations
@@ -189,7 +193,7 @@ public class DbreDatabaseListenerImpl extends AbstractHashCodeTrackingMetadataNo
 		annotations.add(getRooDbManagedAnnotation());
 		
 		// Add FXClass annotation to cause auto-generation of actionscript classes.
-		annotations.add(getFXClassAnnotation());
+//		annotations.add(getFXClassAnnotation());
 
 		final List<JavaType> extendsTypes = new ArrayList<JavaType>();
 
@@ -518,10 +522,12 @@ public class DbreDatabaseListenerImpl extends AbstractHashCodeTrackingMetadataNo
 		return rooDbManagedBuilder;
 	}
 	
-	private AnnotationMetadataBuilder getFXClassAnnotation() {
+/*	private AnnotationMetadataBuilder getFXClassAnnotation() {
 		final AnnotationMetadataBuilder rooFXClassBuilder = new AnnotationMetadataBuilder(ROO_FX_CLASS);
+		rooFXClassBuilder.addEnumAttribute("kind", ROO_FX_CLASS_KIND, new JavaSymbolName(ENUM_ROO_FX_CLASS_KIND_REMOTE));
 		return rooFXClassBuilder;
-	}	
+	}
+	*/ 
 
 	/**
 	 * Indicates whether the given entity has the standard annotations applied

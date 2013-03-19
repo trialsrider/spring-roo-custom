@@ -699,6 +699,8 @@ public class JpaOperationsImpl implements JpaOperations {
                     "numTestsPerEvictionRun", "3", appCtx));
             dataSource.appendChild(createPropertyElement(
                     "minEvictableIdleTimeMillis", "1800000", appCtx));
+			dataSource.appendChild(createPropertyElement(
+					"connectionProperties", "${connectionProperties}", appCtx));
             root.appendChild(dataSource);
             if (dataSourceJndi != null) {
                 dataSourceJndi.getParentNode().removeChild(dataSourceJndi);

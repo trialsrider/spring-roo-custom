@@ -371,13 +371,21 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
 
         for (final ForeignKey exportedKey : table.getExportedKeys()) {
             final Table exportedKeyForeignTable = exportedKey.getForeignTable();
-            Validate.notNull(
-                    exportedKeyForeignTable,
-                    "Foreign key table for foreign key '"
-                            + exportedKey.getName()
+			if (exportedKeyForeignTable == null) {
+				System.out.println("Foreign key table for foreign key "
+                          + exportedKey.getName()
                             + "' in table '"
                             + table.getFullyQualifiedTableName()
                             + "' does not exist. One-to-many relationship not created");
+				continue;
+			}
+//            Validate.notNull(
+//                    exportedKeyForeignTable,
+//                    "Foreign key table for foreign key '"
+//                            + exportedKey.getName()
+//                            + "' in table '"
+//                            + table.getFullyQualifiedTableName()
+//                            + "' does not exist. One-to-many relationship not created");
             if (exportedKeyForeignTable.isJoinTable()) {
                 continue;
             }

@@ -1,7 +1,12 @@
 package org.springframework.roo.addon.dbre;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.commons.io.FileUtils;
 
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Reference;
@@ -46,12 +51,23 @@ public class DbreCommands implements CommandMarker {
             @CliOption(key = "package", mandatory = false, help = "The package in which new entities will be placed") final JavaPackage destinationPackage,
             @CliOption(key = "testAutomatically", mandatory = false, specifiedDefaultValue = "true", unspecifiedDefaultValue = "false", help = "Create automatic integration tests for entities") final boolean testAutomatically,
             @CliOption(key = "enableViews", mandatory = false, specifiedDefaultValue = "true", unspecifiedDefaultValue = "false", help = "Reverse engineer database views") final boolean view,
-            @CliOption(key = "includeTables", mandatory = false, specifiedDefaultValue = "", optionContext = "include-tables", help = "The tables to include in reverse engineering. Multiple table names must be a double-quoted list separated by spaces") final Set<String> includeTables,
+            @CliOption(key = "includeTables", mandatory = false, specifiedDefaultValue = "", optionContext = "include-tables", help = "The tables to include in reverse engineering. Multiple table names must be a double-quoted list separated by spaces")  Set<String> includeTables,
             @CliOption(key = "excludeTables", mandatory = false, specifiedDefaultValue = "", optionContext = "exclude-tables", help = "The tables to exclude from reverse engineering. Multiple table names must be a double-quoted list separated by spaces") final Set<String> excludeTables,
             @CliOption(key = "includeNonPortableAttributes", mandatory = false, specifiedDefaultValue = "true", unspecifiedDefaultValue = "false", help = "Include non-portable JPA @Column attributes such as 'columnDefinition'") final boolean includeNonPortableAttributes,
             @CliOption(key = "activeRecord", mandatory = false, specifiedDefaultValue = "true", unspecifiedDefaultValue = "true", help = "Generate CRUD active record methods for each entity") final boolean activeRecord,
             @CliOption(key = "tableNameMapper", mandatory = false, specifiedDefaultValue = "", unspecifiedDefaultValue = "", help = "Optional table name mapping rules in property file format") final File tableNameMapper) {
-
+		
+		if (includeTables != null && includeTables.size() == 1) {
+			String tablename = includeTables.iterator().next();
+			// if the tablename starts with an @ sign assume it's a file and load the include tables from that file.
+			if (tablename.startsWith("@")) {
+				try {
+					includeTables = new HashSet<String>(FileUtils.readLines(new File(tablename.substring(1))));
+				} catch (IOException ex) {
+					throw new RuntimeException("Unable to open file referenced in parameter includeFiles: " + tablename.substring(1));
+				}
+			}
+		}
         dbreOperations.reverseEngineerDatabase(schemas, destinationPackage,
                 testAutomatically, view, includeTables, excludeTables,
                 includeNonPortableAttributes, activeRecord, tableNameMapper);

@@ -428,7 +428,9 @@ public class IdentifierMetadata extends
         // Add JSR 220 @Temporal annotation to date fields
         String temporalType = StringUtils.defaultIfEmpty(
                 StringUtils.upperCase(columnDefinition), "DATE");
-        if ("DATETIME".equals(temporalType)) {
+		if (temporalType.startsWith("TIMESTAMP") && temporalType.length() > "TIMESTAMP".length()) {
+			temporalType = "TIMESTAMP";
+		} else if ("DATETIME".equals(temporalType)) {
             temporalType = "TIMESTAMP"; // ROO-2606
         }
         final AnnotationMetadataBuilder temporalBuilder = new AnnotationMetadataBuilder(
