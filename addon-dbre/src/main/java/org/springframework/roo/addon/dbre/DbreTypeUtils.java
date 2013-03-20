@@ -217,8 +217,13 @@ public abstract class DbreTypeUtils {
 					if (tableLogicalName != null 
 						&& dbElementName.length() > (tableLogicalName.length() + 1)
 						&& dbElementName.startsWith(tableLogicalName)) {
-							// remove the table name portion of the field. (Note: The +1 steps over the space after the table name
-							dbElementName = dbElementName.substring(tableLogicalName.length() + 1);
+							String tempFieldName = dbElementName.substring(tableLogicalName.length() + 1);
+							// Don't shorten field to "ID".  Hibernate has issues with this and generates SQL that throws an
+							// Oracle ORA-00904 error.
+							if (!tempFieldName.equals("ID")) {
+								// remove the table name portion of the field. (Note: The +1 steps over the space after the table name
+								dbElementName = tempFieldName;
+							}
 					}
 				}
 			} else {

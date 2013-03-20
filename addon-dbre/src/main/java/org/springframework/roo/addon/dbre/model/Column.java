@@ -13,6 +13,7 @@ import static org.springframework.roo.model.JavaType.STRING;
 import static org.springframework.roo.model.JdkJavaType.ARRAY;
 import static org.springframework.roo.model.JdkJavaType.BIG_DECIMAL;
 import static org.springframework.roo.model.JdkJavaType.BLOB;
+import static org.springframework.roo.model.JdkJavaType.CALENDAR;
 import static org.springframework.roo.model.JdkJavaType.CLOB;
 import static org.springframework.roo.model.JdkJavaType.DATE;
 import static org.springframework.roo.model.JdkJavaType.REF;
@@ -119,13 +120,135 @@ public class Column {
 		return typeName;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + (name == null ? 0 : name.hashCode());
-		return result;
-	}
+    private void init() {
+        switch (dataType) {
+        case Types.CHAR:
+            if (columnSize > 1) {
+                jdbcType = "VARCHAR";
+                javaType = STRING;
+            }
+            else {
+                jdbcType = "CHAR";
+                javaType = CHAR_OBJECT;
+            }
+            break;
+        case Types.VARCHAR:
+            jdbcType = "VARCHAR";
+            javaType = STRING;
+            break;
+        case Types.LONGVARCHAR:
+            jdbcType = "LONGVARCHAR";
+            javaType = STRING;
+            break;
+        case Types.NUMERIC:
+            jdbcType = "NUMERIC";
+            javaType = BIG_DECIMAL;
+            break;
+        case Types.DECIMAL:
+            jdbcType = "DECIMAL";
+            javaType = BIG_DECIMAL;
+            break;
+        case Types.BOOLEAN:
+            jdbcType = "BOOLEAN";
+            javaType = BOOLEAN_OBJECT;
+            break;
+        case Types.BIT:
+            jdbcType = "BIT";
+            javaType = BOOLEAN_OBJECT;
+            break;
+        case Types.TINYINT:
+            jdbcType = "TINYINT";
+            javaType = columnSize > 1 ? SHORT_OBJECT : BOOLEAN_OBJECT; // ROO-1860
+            break;
+        case Types.SMALLINT:
+            jdbcType = "SMALLINT";
+            javaType = SHORT_OBJECT;
+            break;
+        case Types.INTEGER:
+            jdbcType = "INTEGER";
+            javaType = INT_OBJECT;
+            break;
+        case Types.BIGINT:
+            jdbcType = "BIGINT";
+            javaType = LONG_OBJECT;
+            break;
+        case Types.REAL:
+            jdbcType = "REAL";
+            javaType = FLOAT_OBJECT;
+            break;
+        case Types.FLOAT:
+            jdbcType = "FLOAT";
+            javaType = DOUBLE_OBJECT;
+            break;
+        case Types.DOUBLE:
+            jdbcType = "DOUBLE";
+            javaType = DOUBLE_OBJECT;
+            break;
+        case Types.BINARY:
+            jdbcType = "BINARY";
+            javaType = BYTE_ARRAY_PRIMITIVE;
+            break;
+        case Types.VARBINARY:
+            jdbcType = "VARBINARY";
+            javaType = BYTE_ARRAY_PRIMITIVE;
+            break;
+        case Types.LONGVARBINARY:
+            jdbcType = "LONGVARBINARY";
+            javaType = BYTE_ARRAY_PRIMITIVE;
+            break;
+        case Types.DATE:
+            jdbcType = "DATE";
+            javaType = DATE;
+            break;
+        case Types.TIME:
+            jdbcType = "TIME";
+            javaType = DATE;
+            break;
+        case Types.TIMESTAMP:
+            jdbcType = "TIMESTAMP";
+            javaType = CALENDAR;
+            break;
+        case Types.CLOB:
+            jdbcType = "CLOB";
+            javaType = CLOB;
+            break;
+        case Types.BLOB:
+            jdbcType = "BLOB";
+            javaType = BLOB;
+            break;
+        case Types.ARRAY:
+            jdbcType = "ARRAY";
+            javaType = ARRAY;
+            break;
+        case Types.DISTINCT:
+            jdbcType = "DISTINCT";
+            javaType = STRING;
+            break;
+        case Types.REF:
+            jdbcType = "REF";
+            javaType = REF;
+            break;
+        case Types.STRUCT:
+            jdbcType = "STRUCT";
+            javaType = STRUCT;
+            break;
+        case Types.NULL:
+            jdbcType = "NULL";
+            break;
+        case Types.JAVA_OBJECT:
+            jdbcType = "JAVA_OBJECT";
+            javaType = OBJECT;
+            break;
+        case Types.OTHER:
+            jdbcType = "OTHER";
+            javaType = STRING;
+            break;
+        default:
+            jdbcType = "VARCHAR";
+            javaType = STRING;
+            break;
+        }
+    }
 
 	private void init() {
 		switch (dataType) {

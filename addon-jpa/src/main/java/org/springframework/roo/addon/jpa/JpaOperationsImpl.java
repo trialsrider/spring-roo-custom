@@ -102,6 +102,7 @@ public class JpaOperationsImpl implements JpaOperations {
     private static final String DATABASE_PROPERTIES_FILE = "database.properties";
     private static final String DATABASE_URL = "database.url";
     private static final String DATABASE_USERNAME = "database.username";
+	private static final String DATABASE_CONNECTION_PROPERTIES = "connectionProperties";
     private static final String DEFAULT_PERSISTENCE_UNIT = "persistenceUnit";
     private static final String GAE_PERSISTENCE_UNIT_NAME = "transactions-optional";
     static final String JPA_DIALECTS_FILE = "jpa-dialects.properties";
@@ -945,6 +946,7 @@ public class JpaOperationsImpl implements JpaOperations {
         props.put(DATABASE_DRIVER, jdbcDatabase.getDriverClassName());
         props.put(DATABASE_USERNAME, StringUtils.stripToEmpty(userName));
         props.put(DATABASE_PASSWORD, StringUtils.stripToEmpty(password));
+		props.put(DATABASE_CONNECTION_PROPERTIES, "");
 
         writeProperties(databasePath, databaseExists, props);
 
