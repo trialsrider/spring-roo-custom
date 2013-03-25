@@ -346,13 +346,24 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
                             + getErrorMsg(
                                     foreignTable.getFullyQualifiedTableName(),
                                     table.getFullyQualifiedTableName()));
-
+			FieldMetadataBuilder fieldBuilder = null;
+			// mcm - needs to be externalized.
+			boolean renderRelationshipAsEmbeddedType = false;
+			if (renderRelationshipAsEmbeddedType) {
             // Fields are stored in a field-keyed map first before adding them
             // to the builder.
             // This ensures the fields from foreign keys with multiple columns
             // will only get created once.
-            final FieldMetadataBuilder fieldBuilder = getOneToOneOrManyToOneField(
+				fieldBuilder = getOneToOneOrManyToOneField(
                     fieldName, fieldType, foreignKey, MANY_TO_ONE, true);
+			} else {
+				fieldBuilder = getField(fieldName, foreignKey.getReferences().iterator().next().getLocalColumn(),
+                    table.getName(), table.isIncludeNonPortableAttributes());
+				if (fieldBuilder.getFieldType().equals(DATE)
+						&& fieldName.getSymbolName().equals(CREATED)) {
+					fieldBuilder.setFieldInitializer("new Date()");
+				}
+			}
 			if (null != fieldBuilder) {
 				uniqueFields.put(fieldName, fieldBuilder);
 			}
