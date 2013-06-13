@@ -220,7 +220,8 @@ public abstract class DbreTypeUtils {
 							String tempFieldName = dbElementName.substring(tableLogicalName.length() + 1);
 							// Don't shorten field to "ID".  Hibernate has issues with this and generates SQL that throws an
 							// Oracle ORA-00904 error.
-							if (!tempFieldName.equals("ID")) {
+							// if (!tempFieldName.equals("ID") && !(tableName.endsWith("_TYPE") && tempFieldName.equals("TYPE_ID"))) {
+							if (!tempFieldName.equals("ID") && !tempFieldName.endsWith("TYPE ID")) {
 								// remove the table name portion of the field. (Note: The +1 steps over the space after the table name
 								dbElementName = tempFieldName;
 							}

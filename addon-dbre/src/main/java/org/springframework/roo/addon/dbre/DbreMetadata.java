@@ -148,11 +148,12 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
         addOneToOneFields(table);
 
         // Add fields for many-valued associations with one-to-many multiplicity
-        addOneToManyFields(table);
+//        addOneToManyFields(table);
 
         // Add fields for single-valued associations to other entities that have
         // many-to-one multiplicity
-        addManyToOneFields(table);
+// mcm - ignore for now
+//		addManyToOneFields(table);
 
         // Add remaining fields from columns
         addOtherFields(table);
@@ -379,7 +380,12 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
         if (table.isJoinTable()) {
             return;
         }
-
+		
+		/** mcm Assume domain table and don't map any reverse relationships **/
+		if (table.getName().endsWith("_TYPE")) {
+			return;
+		} 
+		
         for (final ForeignKey exportedKey : table.getExportedKeys()) {
             final Table exportedKeyForeignTable = exportedKey.getForeignTable();
 			if (exportedKeyForeignTable == null) {
@@ -592,8 +598,9 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
 
         for (final Column column : table.getColumns()) {
             final String columnName = column.getName();
-            final boolean isForeignKey = table
-                    .findImportedKeyByLocalColumnName(columnName) != null;
+			boolean isForeignKey = table.findImportedKeyByLocalColumnName(columnName) != null;
+           // -- mcm - don't deal with ManyToOne for now -- 
+			isForeignKey = false;
             JavaSymbolName fieldName = new JavaSymbolName(
                     DbreTypeUtils.suggestFieldName(columnName, table.getName(),
                             isForeignKey || column.isPrimaryKey()));
