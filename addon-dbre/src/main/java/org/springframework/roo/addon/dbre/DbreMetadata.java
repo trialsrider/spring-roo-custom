@@ -20,7 +20,7 @@ import static org.springframework.roo.model.JpaJavaType.TEMPORAL_TYPE;
 import static org.springframework.roo.model.Jsr303JavaType.NOT_NULL;
 import static org.springframework.roo.model.RooJavaType.ROO_TO_STRING;
 import static org.springframework.roo.model.SpringJavaType.DATE_TIME_FORMAT;
-
+import static org.springframework.roo.model.DomainRefType.DOMAIN_REF_TYPE;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,6 +56,7 @@ import org.springframework.roo.classpath.details.annotations.StringAttributeValu
 import org.springframework.roo.classpath.itd.AbstractItdTypeDetailsProvidingMetadataItem;
 import org.springframework.roo.metadata.MetadataIdentificationUtils;
 import org.springframework.roo.model.DataType;
+import org.springframework.roo.model.DomainRefType;
 import org.springframework.roo.model.EnumDetails;
 import org.springframework.roo.model.JavaSymbolName;
 import org.springframework.roo.model.JavaType;
@@ -97,6 +98,7 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
     private static final String PROVIDES_TYPE = MetadataIdentificationUtils
             .create(PROVIDES_TYPE_STRING);
     private static final String VALUE = "value";
+	public static final String DOMAIN_TYPE_TERMINATOR = "Type";
 
     private DbManagedAnnotationValues annotationValues;
     private Database database;
@@ -598,7 +600,8 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
 
         for (final Column column : table.getColumns()) {
             final String columnName = column.getName();
-			boolean isForeignKey = table.findImportedKeyByLocalColumnName(columnName) != null;
+			final ForeignKey foreignKey = table.findImportedKeyByLocalColumnName(columnName);
+			boolean isForeignKey = foreignKey != null;
            // -- mcm - don't deal with ManyToOne for now -- 
 			isForeignKey = false;
             JavaSymbolName fieldName = new JavaSymbolName(
@@ -622,9 +625,27 @@ public class DbreMetadata extends AbstractItdTypeDetailsProvidingMetadataItem {
                 fieldName = governorTypeDetails.getUniqueFieldName(fieldName
                         .getSymbolName());
             }
+			
             final FieldMetadataBuilder fieldBuilder = getField(fieldName,
                     column, table.getName(),
                     table.isIncludeNonPortableAttributes());
+			if (foreignKey != null) {
+				final Table importedKeyForeignTable = foreignKey.getForeignTable();
+				final String foreignTableName = importedKeyForeignTable.getName();
+				final String foreignSchemaName = importedKeyForeignTable.getSchema().getName();
+				final JavaType fieldType = DbreTypeUtils.findTypeForTableName(managedEntities, foreignTableName, foreignSchemaName);				
+				final AnnotationMetadataBuilder columnBuilder = new AnnotationMetadataBuilder(
+						DOMAIN_REF_TYPE);
+				columnBuilder.addStringAttribute(NAME, column.getEscapedName());
+				columnBuilder.addStringAttribute("foreignTableName", foreignKey.getForeignTable().getName());
+				columnBuilder.addStringAttribute("foreignFieldName",	DbreTypeUtils.suggestFieldName(foreignKey.getForeignTable()));
+				final String foreignEntityTypeName = fieldType.getSimpleTypeName();
+				columnBuilder.addStringAttribute("foreignFieldType", foreignEntityTypeName);
+				if (foreignEntityTypeName.endsWith(DOMAIN_TYPE_TERMINATOR)) {
+					columnBuilder.addStringAttribute("domainFieldType", foreignEntityTypeName);
+				}
+				fieldBuilder.addAnnotation(columnBuilder);
+			}
             if (fieldBuilder.getFieldType().equals(DATE)
                     && fieldName.getSymbolName().equals(CREATED)) {
                 fieldBuilder.setFieldInitializer("new Date()");
